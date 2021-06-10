@@ -1,4 +1,4 @@
-package model;
+package br.wagner.model;
 
 import java.text.DecimalFormat;
 

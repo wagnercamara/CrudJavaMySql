@@ -1,6 +1,6 @@
-<%@ page import="classe.*"%>
+<%@ page import="br.wagner.classe.*"%>
 <%@ page import="java.util.*"%>
-<%@ page import="model.Produto"%>
+<%@ page import="br.wagner.model.Produto"%>
 
 <%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 
@@ -27,11 +27,12 @@
 
 <title>Estoque</title>
 
-<style>
-#espaco{
-height: 15px;
-}
+<link rel="shortcut icon" href="./icon/home.ico" >
 
+<style>
+#espaco {
+	height: 15px;
+}
 </style>
 
 </head>
@@ -41,6 +42,8 @@ height: 15px;
 	<div id="NavBar">
 		<jsp:include page='navBar.jsp' />
 	</div>
+
+	<div id="espaco"></div>
 
 	<div id="dados">
 
@@ -52,9 +55,10 @@ height: 15px;
 					<th>Nome</th>
 					<th>Valor Item</th>
 					<th>Quant. Est.</th>
-					<th>%</th>					
+					<th>%</th>
 					<th>Descont. Uni.</th>
 					<th>Valor liq. Uni.</th>
+					<th>Valor liq. Estoq.</th>
 					<th colspan=2>Ações</th>
 				</tr>
 			</thead>
@@ -65,11 +69,19 @@ height: 15px;
 					<tr>
 						<td><c:out value="${produto.id}" /></td>
 						<td><c:out value="${produto.nome}" /></td>
-						<td><fmt:formatNumber value="${produto.valor}" pattern="#,#00.00#"/></td>
+						<td><fmt:formatNumber value="${produto.valor}"
+								pattern="#,#00.00#" /></td>
 						<td><c:out value="${produto.qtd}" /></td>
 						<td><c:out value="${produto.desconto}" /></td>
-						<td><fmt:formatNumber value="${(produto.valor * (produto.desconto/100))}" pattern="#,#00.00#"/></td>
-						<td><fmt:formatNumber value="${produto.valor-(produto.valor * (produto.desconto/100))}" pattern="#,#00.00#"/></td>
+						<td><fmt:formatNumber
+								value="${(produto.valor * (produto.desconto/100))}"
+								pattern="#,#00.00#" /></td>
+						<td><fmt:formatNumber
+								value="${produto.valor-(produto.valor * (produto.desconto/100))}"
+								pattern="#,#00.00#" /></td>
+						<td><fmt:formatNumber
+								value="${(produto.valor-(produto.valor * (produto.desconto/100)))*produto.qtd}"
+								pattern="#,#00.00#" /></td>
 
 						<td><a
 							class="btn-floating btn-large waves-effect waves-light blue"
@@ -84,14 +96,16 @@ height: 15px;
 
 			</tbody>
 		</table>
-		
+
 		<div id="espaco"></div>
-		
-		<a class="waves-effect waves-light btn" href="Page?acation=cadastro"><i
-			class="material-icons left">save</i>Cadastrar Novo Produto</a> </a>
+
+		<a class="waves-effect waves-light btn" href="Page?action=cadastro"><i
+			class="material-icons left">save</i>Cadastrar Novo Produto</a>
 
 	</div>
+	
 	<div id="espaco"></div>
+	
 	<jsp:include page='footer.jsp' />
 
 	<!--JavaScript at end of body for optimized loading-->

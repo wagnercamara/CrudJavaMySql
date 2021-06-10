@@ -1,10 +1,10 @@
-package classe;
+package br.wagner.classe;
 
 import java.sql.SQLException;
 import java.util.List;
 
-import dao.ProdutoDao;
-import model.Produto;
+import br.wagner.dao.ProdutoDao;
+import br.wagner.model.Produto;
 
 public class Negocio {
 
@@ -21,17 +21,19 @@ public class Negocio {
 		} catch (Exception e) {
 			System.out.println("Erro: Classe.Negocio.SelectProdutoAll() --> " + e.getMessage());
 		}
-		
+
 		return produtos;
 
 	}
 
-	public void InsertProduto(String name, double valor, int qtd, int desconto) throws SQLException {
+	public boolean InsertProduto(String name, double valor, int qtd, int desconto) throws SQLException {
 
-		boolean chack = pro.CheckProduct(name);
+		boolean check = pro.CheckProduct(name);
 
-		if (chack) {
-
+		System.out.println("InsertProduto --> " + check);
+		
+		if (check == true) {
+			
 			Produto produto = new Produto();
 
 			produto.setNome(name);
@@ -39,39 +41,41 @@ public class Negocio {
 			produto.setQtd(qtd);
 			produto.setDesconto(desconto);
 
-			pro.Insert(produto);
+			return pro.Insert(produto);
+			
 
 		} else {
 			System.out.println("Erro: Classe.Negocio.InsertProduto() --> Nome Repetido");
+			return false;
 		}
 
 	}
 
 	public void UpdateProduto(int id, String name, double valor, int qtd, int desconto) throws SQLException {
 
-		boolean chack = pro.CheckProduct(name);
+		Produto produto = new Produto();
 
-		if (chack) {
+		produto.setId(id);
+		produto.setNome(name);
+		produto.setValor(valor);
+		produto.setQtd(qtd);
+		produto.setDesconto(desconto);
 
-			Produto produto = new Produto();
+		pro.Update(produto);
 
-			produto.setId(id);
-			produto.setNome(name);
-			produto.setValor(valor);
-			produto.setQtd(qtd);
-			produto.setDesconto(desconto);
+	}
 
-			pro.Update(produto);
-
-		} else {
-			System.out.println("Erro: Classe.Negocio.UpdateProduto() --> Nome Repetido");
-		}
-
+	public Produto Select(int id) throws SQLException {
+		return pro.Select(id);
 	}
 
 	public void DeleteProduto(int id) throws SQLException {
 
 		pro.Remove(id);
+	}
+	
+	public void CloseProduto() throws SQLException {
+		pro.closeConnection();
 	}
 
 }

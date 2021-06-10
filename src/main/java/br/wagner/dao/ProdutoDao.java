@@ -1,4 +1,4 @@
-package dao;
+package br.wagner.dao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -8,38 +8,39 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import model.Produto;
-import util.ConexaoMySQL;
+import br.wagner.model.Produto;
+import br.wagner.util.ConexaoMySQL;
 
 public class ProdutoDao {
 
 	private Connection connection;
-	
+
 	public ProdutoDao() {
-			connection = ConexaoMySQL.getConnection();
+		connection = ConexaoMySQL.getConnection();
 	}
-	
+
 	public boolean CheckProduct(String nome) throws SQLException {
 
 		boolean retorno = true;
 
 		try {
-			PreparedStatement ps = connection
-					.prepareStatement("SELECT idProduto FROM produto.produtos WHERE nProduto=?;");
+			PreparedStatement ps = connection.prepareStatement("SELECT * FROM produtos WHERE nProduto=?;");
 			ps.setString(1, nome);
 
 			ResultSet rs = ps.executeQuery();
 
 			if (rs.next()) {
-				retorno = false;
+
+				if (nome.equalsIgnoreCase(rs.getString("nProduto"))) {	
+					retorno = false;
+				}				
 			}
-			connection.close();
 
 		} catch (Exception ex) {
 
-			connection.close();
-
 			System.out.println("Error: dao.CheckProduct() -->" + ex.getMessage());
+			
+			retorno = true;
 		}
 
 		return retorno;
@@ -51,8 +52,8 @@ public class ProdutoDao {
 		Produto produto = new Produto();
 
 		try {
-			PreparedStatement ps = connection
-					.prepareStatement("SELECT idProduto FROM produto.produtos WHERE idProduto=?;");
+			PreparedStatement ps = connection.prepareStatement(
+					"SELECT idProduto, nProduto, valor, qtd, desconto FROM produtos WHERE idProduto=?;");
 			ps.setInt(1, id);
 
 			ResultSet rs = ps.executeQuery();
@@ -68,17 +69,13 @@ public class ProdutoDao {
 
 		} catch (Exception ex) {
 
-			
-
 			System.out.println("Error: dao.Select() -->" + ex.getMessage());
 		}
-		
-		connection.close();
+
 		return produto;
 
 	}
 
-	
 	public List<Produto> SelectAll() throws SQLException {
 
 		System.out.println("log: SelectAll");
@@ -86,7 +83,7 @@ public class ProdutoDao {
 		List<Produto> produtos = new ArrayList<Produto>();
 
 		try {
-			Statement stmt  = connection.createStatement();
+			Statement stmt = connection.createStatement();
 
 			ResultSet rs = stmt.executeQuery("SELECT idProduto, nProduto, valor, qtd, desconto FROM produtos;");
 
@@ -100,12 +97,11 @@ public class ProdutoDao {
 				produto.setValor(rs.getDouble("valor"));
 
 				produtos.add(produto);
-				
+
 			}
-			connection.close();
 
 		} catch (Exception ex) {
-			connection.close();
+
 			System.out.println("Error: dao.Function.SelectAll()  -->" + ex.getMessage());
 		}
 
@@ -113,11 +109,12 @@ public class ProdutoDao {
 
 	}
 
-	public void Insert(Produto produto) throws SQLException {
+	public boolean Insert(Produto produto) throws SQLException {
 
 		try {
-			PreparedStatement preparedStatement = connection.prepareStatement(
-					"INSERT INTO produto.produtos (nProduto, valor, qtd, desconto) VALUES(?, ?, ?, ?);");
+
+			PreparedStatement preparedStatement = connection
+					.prepareStatement("INSERT INTO produtos (nProduto, valor, qtd, desconto) VALUES(?, ?, ?, ?);");
 
 			preparedStatement.setString(1, produto.getNome());
 			preparedStatement.setDouble(2, produto.getValor());
@@ -126,12 +123,12 @@ public class ProdutoDao {
 
 			preparedStatement.executeUpdate();
 
-			connection.close();
+			return true;
 
 		} catch (SQLException e) {
 
-			connection.close();
 			e.printStackTrace();
+			return false;
 		}
 
 	}
@@ -140,7 +137,7 @@ public class ProdutoDao {
 
 		try {
 			PreparedStatement preparedStatement = connection.prepareStatement(
-					"UPDATE produto.produtos SET valor=?, qtd=?, desconto=? WHERE idProduto=? AND nProduto=?;");
+					"UPDATE produtos SET valor=?, qtd=?, desconto=? WHERE idProduto=? AND nProduto=?;");
 
 			preparedStatement.setDouble(1, produto.getValor());
 			preparedStatement.setInt(2, produto.getQtd());
@@ -151,10 +148,8 @@ public class ProdutoDao {
 
 			preparedStatement.executeUpdate();
 
-			connection.close();
-
 		} catch (SQLException e) {
-			connection.close();
+
 			e.printStackTrace();
 		}
 	}
@@ -166,10 +161,13 @@ public class ProdutoDao {
 			preparedStatement.setInt(1, id);
 			preparedStatement.executeUpdate();
 
-
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void closeConnection() throws SQLException {
+		connection.close();
 	}
 
 }

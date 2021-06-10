@@ -1,4 +1,4 @@
-package util;
+package br.wagner.util;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;

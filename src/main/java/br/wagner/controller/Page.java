@@ -1,8 +1,7 @@
-package controller;
+package br.wagner.controller;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -11,8 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import classe.Negocio;
-import model.Produto;
+import br.wagner.classe.Negocio;
 
 /**
  * Servlet implementation class Page
@@ -23,6 +21,7 @@ public class Page extends HttpServlet {
 
 	private static String INSERT_OR_EDIT = "/cadastro.jsp";
 	private static String LIST_PRODUTO = "/home.jsp";
+	private static String ERROR = "/error.jsp";
 
 	/**
 	 * @throws SQLException
@@ -32,6 +31,7 @@ public class Page extends HttpServlet {
 			throws ServletException, IOException, SQLException {
 
 		String forward = "";
+		int idProduto = 0;
 
 		Negocio ng = new Negocio();
 
@@ -40,35 +40,123 @@ public class Page extends HttpServlet {
 			String action = request.getParameter("action");
 
 			if (action.equalsIgnoreCase("insert")) {
+
+				try {
+					System.out.println("insert");
+
+					String nome = request.getParameter("nome").toUpperCase();
+
+					double valor = Double.parseDouble(request.getParameter("valor"));
+
+					int qtd = Integer.parseInt(request.getParameter("qtd"));
+
+					int desconto = Integer.parseInt(request.getParameter("desconto"));
+
+
+					String sId = request.getParameter("idProduto");
+
+					if (sId == null || sId.isEmpty()) {
+						sId = "ins";
+					}
+
+					System.out.println("nome ="+nome+" valor ="+valor+" qtd ="+qtd+" desconto =" +desconto);
+					
+					if (sId.equalsIgnoreCase("ins")) {
+
+						System.out.println("insert new Produtos ");
+
+						boolean check = ng.InsertProduto(nome, valor, qtd, desconto);
+
+						System.out.println("Check Insert --> " + check);
+						
+						if (check == false) {
+
+							forward = INSERT_OR_EDIT;
+
+							request.setAttribute("check", "repetido");
+
+						} else {
+
+							forward = LIST_PRODUTO;
+
+							request.setAttribute("produtos", ng.SelectProdutoAll());
+
+						}
+						
+					} else {
+						
+						idProduto = Integer.parseInt(sId);
+
+						System.out.println("Update Produtos ");
+
+						ng.UpdateProduto(idProduto, nome, valor, qtd, desconto);
+
+						forward = LIST_PRODUTO;
+
+						request.setAttribute("produtos", ng.SelectProdutoAll());
+
+					}
+
+				} catch (Exception e) {
+
+					forward = INSERT_OR_EDIT;
+
+					request.setAttribute("check", "error");
+				}
+
+			} else if (action.equalsIgnoreCase("update")) {
+
+				idProduto = Integer.parseInt(request.getParameter("id"));
+
+				System.out.println("update Produtos --> " + idProduto);
+
 				forward = INSERT_OR_EDIT;
+
+				request.setAttribute("Update", ng.Select(idProduto));
+
+			} else if (action.equalsIgnoreCase("edit")) {
+
+				idProduto = Integer.parseInt(request.getParameter("id"));
+
+				System.out.println("Editar Produtos --> " + idProduto);
+
+				forward = INSERT_OR_EDIT;
+
+				request.setAttribute("produto", ng.Select(idProduto));
+
 			} else if (action.equalsIgnoreCase("delete")) {
-								
-				int idProduto = Integer.parseInt(request.getParameter("id"));
-				
+
+				idProduto = Integer.parseInt(request.getParameter("id"));
+
 				System.out.println("Deletar Produtos --> " + idProduto);
 
 				ng.DeleteProduto(idProduto);
-				
+
 				forward = LIST_PRODUTO;
-				
+
 				request.setAttribute("produtos", ng.SelectProdutoAll());
-				
-			} else if (action.equalsIgnoreCase("update")) {
-				int idProduto = Integer.parseInt(request.getParameter("id"));
-				ng.DeleteProduto(idProduto);
-				forward = LIST_PRODUTO;
-				request.setAttribute(forward, ng.SelectProdutoAll());
-			} else {
+
+			} else if (action.equalsIgnoreCase("home")) {
 				System.out.println("Listar Produtos");
-				forward = LIST_PRODUTO;	
+				forward = LIST_PRODUTO;
 				request.setAttribute("produtos", ng.SelectProdutoAll());
+
+			} else {
+				forward = INSERT_OR_EDIT;
 			}
 
-	        RequestDispatcher view = request.getRequestDispatcher(forward);
-	        view.forward(request, response);
+			ng.CloseProduto();
+
+			RequestDispatcher view = request.getRequestDispatcher(forward);
+			view.forward(request, response);
 
 		} catch (Exception e) {
+
+			ng.CloseProduto();
 			System.out.println("Erro: controller.processRequest() --> " + e.getMessage());
+			forward = ERROR;
+			RequestDispatcher view = request.getRequestDispatcher(forward);
+			view.forward(request, response);
 		}
 	}
 
